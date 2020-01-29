@@ -6,6 +6,7 @@ from queue import Queue
 import threading
 import traceback
 import time
+from enum import Enum
 
 _commands = Queue()
 _events = Queue()
@@ -13,12 +14,19 @@ _events = Queue()
 _tk_initialized = threading.Event()
 _game_thread_initialized = threading.Event()
 
+class EventType(Enum):
+    KeyPress = 'KeyPress'
+    KeyRelease = 'KeyRelease'
+    Motion = 'Motion'
+    ButtonPress = 'ButtonPress'
+    ButtonRelease = 'ButtonRelease'
+
 class Event:
     def __init__(self, tkevent):
         self.tkevent = tkevent
 
     def __getattr__(self, k):
-        if k == 'type': return str(self.tkevent.type)
+        if k == 'type': return EventType[str(self.tkevent.type)]
         if k == 'key': return self.tkevent.keysym
         if k == 'mouse_button': return self.tkevent.num
         return getattr(self.tkevent, k)
@@ -40,11 +48,8 @@ class _TkWindow(tk.Tk):
         self.canvas = tk.Canvas(background='black')
         self.canvas.grid(column=0, row=0, sticky="nwes")
 
-        self.bind("<KeyPress>", self.handle_event)
-        self.bind("<KeyRelease>", self.handle_event)
-        self.bind("<Motion>", self.handle_event)
-        self.bind("<ButtonPress>", self.handle_event)
-        self.bind("<ButtonRelease>", self.handle_event)
+        for event_type in EventType:
+            self.bind(f"<{event_type.name}>", self.handle_event)
         self.bind("<<notify>>", self.process_commands)
 
         self.canvas.focus_set()
@@ -243,8 +248,20 @@ def draw_image(path, x, y):
 def draw_text(text, x, y, size=12, color='white'):
     _commands.put(('draw_text', text, x, y, size, color))
 
-def draw(type, *args, **kwargs):
-    _commands.put(('draw', type, args, kwargs))
+def draw_arc(*args, **kwargs):
+    _commands.put(('draw', 'arc', args, kwargs))
+
+def draw_line(*args, **kwargs):
+    _commands.put(('draw', 'line', args, kwargs))
+
+def draw_oval(*args, **kwargs):
+    _commands.put(('draw', 'oval', args, kwargs))
+
+def draw_polygon(*args, **kwargs):
+    _commands.put(('draw', 'polygon', args, kwargs))
+
+def draw_rectangle(*args, **kwargs):
+    _commands.put(('draw', 'rectangle', args, kwargs))
 
 def draw_end():
     _game_thread_notify()

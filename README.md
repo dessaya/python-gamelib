@@ -16,11 +16,11 @@ def main():
 
     for _ in gamelib.loop(fps=30):
         for event in gamelib.get_events():
-            if event.type == 'KeyPress' and event.key == 'q':
+            if event.type == gamelib.EventType.KeyPress and event.key == 'q':
                 return
 
         gamelib.draw_begin()
-        gamelib.draw('rectangle', x-10, y-10, x+10, y+10, fill='red')
+        gamelib.draw_rectangle(x-10, y-10, x+10, y+10, fill='red')
         gamelib.draw_end()
 
         x += dx
@@ -35,19 +35,34 @@ gamelib.init(main)
 
 # Goals
 
-* **Easy to install:** See [relevant XKCD](https://xkcd.com/1987/).
 * **Easy to learn:** Writing games should be almost as simple as writing console
   programs. It should not require knowledge about OOP, double-buffering, color channels,
   blitting or actors.
-* **Portable** Support Windows / Mac OS / Linux desktop.
 * **Simple, basic API:** Support drawing stuff and maybe playing sounds, nothing more.
+* **Portable** Support Windows / Mac OS / Linux desktop.
+* **Easy to install:** See [relevant XKCD](https://xkcd.com/1987/). It should
+  not require installing anything else after a fresh Python installation.
+  That rules out `pip`.
 
 # Installation
 
 Just download `gamelib.py` and place it alongside your project :)
+
+# Documentation
+
+```
+>>> import gamelib
+>>> help(gamelib)
+```
+
+Also look at the examples.
 
 # Run the examples
 
 ```
 $ python3 example-01-bounce.py
 ```
+
+# Acknowledgements
+
+* Sound support is stolen from https://github.com/TaylorSMarks/playsound
