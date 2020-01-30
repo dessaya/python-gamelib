@@ -51,7 +51,7 @@ def main():
 gamelib.init(main)
 ```
 
-# Goals
+## Goals
 
 * **Easy to learn:** Writing games should be almost as simple as writing console
   programs. It should not require knowledge about OOP, double-buffering, color channels,
@@ -62,11 +62,11 @@ gamelib.init(main)
   not require installing anything else after a fresh Python installation.
   That rules out `pip`.
 
-# Installation
+## Installation
 
 Just download `gamelib.py` and place it alongside your project :)
 
-# Documentation
+## Documentation
 
 ```
 >>> import gamelib
@@ -75,12 +75,12 @@ Just download `gamelib.py` and place it alongside your project :)
 
 Also look at the examples.
 
-# Run the examples
+## Run the examples
 
 ```
 $ python3 example-01-hello-world.py
 ```
 
-# Acknowledgements
+## Acknowledgements
 
 * Sound support is stolen from https://github.com/TaylorSMarks/playsound
