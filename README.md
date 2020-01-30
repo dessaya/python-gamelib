@@ -3,7 +3,25 @@
 Gamelib is a pure-Python single-file library/framework for writing simple games. It is
 intended for educational purposes (e.g. to be used in basic programming courses).
 
-Here is a "hello world" that shows a rectangle moving around the screen:
+Here is a "hello world" example:
+
+```python
+import gamelib
+
+def main():
+    gamelib.resize(300, 300)
+
+    gamelib.draw_begin()
+    gamelib.draw_text('Hello world!', 0, 0)
+    gamelib.draw_end()
+
+    # wait until the user closes the window
+    gamelib.wait(gamelib.EventType.KeyPress)
+
+gamelib.init(main)
+```
+
+And this example shows a rectangle moving around the screen:
 
 ```python
 import gamelib
@@ -60,7 +78,7 @@ Also look at the examples.
 # Run the examples
 
 ```
-$ python3 example-01-bounce.py
+$ python3 example-01-hello-world.py
 ```
 
 # Acknowledgements

@@ -185,6 +185,8 @@ def _audio_init():
     else:
         return _playsoundNix
 
+_play_sound = _audio_init()
+
 def game_thread_main(callback, args):
     try:
         callback(*args)
@@ -222,11 +224,14 @@ def _game_thread_notify():
     if _TkWindow.instance:
         _TkWindow.instance.notify()
 
-def wait():
+def wait(event_type=None):
     _game_thread_wait_for_tk()
     if not _TkWindow.instance:
         return None
-    return _events.get()
+    while True:
+        event = _events.get()
+        if not event_type or event.type == event_type:
+            return event
 
 def get_events():
     _game_thread_wait_for_tk()
@@ -297,7 +302,8 @@ def loop(fps):
         b = time.time()
         time.sleep(max(0, frame_duration - (b - a)))
 
-play_sound = _audio_init()
+def play_sound():
+    _play_sound()
 
 if __name__ == '__main__':
     def interactive_main(local):
