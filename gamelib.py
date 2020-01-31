@@ -2,11 +2,12 @@ import tkinter as tk
 from tkinter.font import Font
 from tkinter import simpledialog, messagebox
 from collections import namedtuple
-from queue import Queue
+from queue import Queue, Empty
+from enum import Enum
 import threading
 import traceback
 import time
-from enum import Enum
+import signal
 
 _commands = Queue()
 _events = Queue()
@@ -37,8 +38,10 @@ class Event:
 class _TkWindow(tk.Tk):
     instance = None
 
-    def __init__(self):
+    def __init__(self, fps):
         super().__init__()
+
+        _TkWindow.fps = fps
 
         self.title("TK Game")
         self.resizable(False, False)
@@ -50,19 +53,21 @@ class _TkWindow(tk.Tk):
 
         for event_type in EventType:
             self.bind(f"<{event_type.name}>", self.handle_event)
-        self.bind("<<notify>>", self.process_commands)
 
         self.canvas.focus_set()
         self.after_idle(self.process_commands)
 
-    def notify(self):
-        self.update_idletasks()
-        self.event_generate('<<notify>>')
-
     def process_commands(self, *args):
-        while not _commands.empty():
-            method, *args = _commands.get()
-            getattr(self, method)(*args)
+        "Periodically poll the _commands queue"
+        while True:
+            try:
+                method, *args = _commands.get(False)
+                getattr(self, method)(*args)
+            except Empty:
+                break
+        # FIXME: do not use polling at all; which is difficult since tkinter does not
+        #        support multithreading
+        self.after(int(1000 / _TkWindow.fps), self.process_commands)
 
     def handle_event(self, tkevent):
         _events.put(Event(tkevent))
@@ -77,10 +82,14 @@ class _TkWindow(tk.Tk):
         self.canvas.create_image(x, y, anchor='nw', image=self.get_image(path))
 
     def draw(self, type, args, kwargs):
-        getattr(self.canvas, f'create_{type}')(*args, **kwargs)
+        options = {'fill': 'white'}
+        options.update(kwargs)
+        getattr(self.canvas, f'create_{type}')(*args, **options)
 
-    def draw_text(self, text, x, y, size, color):
-        self.canvas.create_text(x, y, anchor='nw', text=text, fill=color, font=self.get_font(size))
+    def draw_text(self, text, x, y, size, kwargs):
+        options = {'fill': 'white'}
+        options.update(kwargs)
+        self.canvas.create_text(x, y, text=text, font=self.get_font(size), **options)
 
     def get_font(self, size):
         name = f'font-{size}'
@@ -197,18 +206,29 @@ def game_thread_main(callback, args):
 
 def _game_thread_exit():
     _commands.put(('destroy',))
-    _game_thread_notify()
 
-def init(callback, *args):
+def sigint_handler(sig, frame):
+    w = _TkWindow.instance
+    if w:
+        w.quit()
+        w.update()
+
+def init(callback, fps=30, args=None):
     # start game thread
-    threading.Thread(target=game_thread_main, args=[callback, args]).start()
+    threading.Thread(target=game_thread_main, args=[callback, (args or [])]).start()
 
     # block until wait() called on game thread
     _game_thread_initialized.wait()
 
-    _TkWindow.instance = _TkWindow()
+    _TkWindow.instance = _TkWindow(fps)
     _tk_initialized.set()
-    _TkWindow.instance.mainloop()
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    try:
+        _TkWindow.instance.mainloop()
+    except KeyboardInterrupt:
+        pass
     _events.put(None)
     _TkWindow.instance = None
 
@@ -219,30 +239,27 @@ def _game_thread_wait_for_tk():
         # block until Tk is initialized
         _tk_initialized.wait()
 
-def _game_thread_notify():
-    _game_thread_wait_for_tk()
-    if _TkWindow.instance:
-        _TkWindow.instance.notify()
-
 def wait(event_type=None):
     _game_thread_wait_for_tk()
     if not _TkWindow.instance:
         return None
     while True:
         event = _events.get()
-        if not event_type or event.type == event_type:
+        if not event or not event_type or event.type == event_type:
             return event
 
 def get_events():
     _game_thread_wait_for_tk()
     events = []
-    while not _events.empty():
-        events.append(_events.get())
+    while True:
+        try:
+            events.append(_events.get(False))
+        except Empty:
+            break
     return events
 
 def title(s):
     _commands.put(('title', s))
-    _game_thread_notify()
 
 def draw_begin():
     _commands.put(('clear',))
@@ -250,8 +267,8 @@ def draw_begin():
 def draw_image(path, x, y):
     _commands.put(('draw_image', path, x, y))
 
-def draw_text(text, x, y, size=12, color='white'):
-    _commands.put(('draw_text', text, x, y, size, color))
+def draw_text(text, x, y, size=12, **kwargs):
+    _commands.put(('draw_text', text, x, y, size, kwargs))
 
 def draw_arc(*args, **kwargs):
     _commands.put(('draw', 'arc', args, kwargs))
@@ -269,34 +286,29 @@ def draw_rectangle(*args, **kwargs):
     _commands.put(('draw', 'rectangle', args, kwargs))
 
 def draw_end():
-    _game_thread_notify()
+    _commands.put(('update',))
 
 def resize(w, h):
     _commands.put(('resize', w, h))
-    _game_thread_notify()
 
 def say(message):
     _commands.put(('say', message))
-    _game_thread_notify()
 
 def input(prompt):
     response = Queue()
     _commands.put(('input', prompt, response))
-    _game_thread_notify()
     return response.get()
 
 def with_window(func, *args):
     _commands.put(('with_window', func, args))
-    _game_thread_notify()
 
 def is_alive():
     _game_thread_wait_for_tk()
     return bool(_TkWindow.instance)
 
-def loop(fps):
-    now = 0
-    frame_duration = 1.0 / fps
+def loop():
     while is_alive():
+        frame_duration = 1.0 / _TkWindow.fps
         a = time.time()
         yield
         b = time.time()
@@ -307,8 +319,7 @@ def play_sound():
 
 if __name__ == '__main__':
     def interactive_main(local):
-        _game_thread_notify()
         import code
         code.interact(local=local)
 
-    init(interactive_main, locals())
+    init(interactive_main, args=locals())

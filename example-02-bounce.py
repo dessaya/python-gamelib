@@ -6,7 +6,7 @@ def main():
     x, y = 150, 80
     dx, dy = 5, 5
 
-    for _ in gamelib.loop(fps=30):
+    for _ in gamelib.loop():
         for event in gamelib.get_events():
             if event.type == gamelib.EventType.KeyPress and event.key == 'q':
                 return
@@ -22,4 +22,4 @@ def main():
         if y > 300 or y < 0:
             dy *= -1
 
-gamelib.init(main)
+gamelib.init(main, fps=30)
