@@ -292,9 +292,11 @@ def resize(w, h):
     _commands.put(('resize', w, h))
 
 def say(message):
+    _game_thread_wait_for_tk()
     _commands.put(('say', message))
 
 def input(prompt):
+    _game_thread_wait_for_tk()
     response = Queue()
     _commands.put(('input', prompt, response))
     return response.get()
