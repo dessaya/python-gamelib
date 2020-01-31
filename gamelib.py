@@ -38,10 +38,10 @@ class Event:
 class _TkWindow(tk.Tk):
     instance = None
 
-    def __init__(self, fps):
+    def __init__(self):
         super().__init__()
 
-        _TkWindow.fps = fps
+        self.closed = False
 
         self.title("TK Game")
         self.resizable(False, False)
@@ -53,21 +53,28 @@ class _TkWindow(tk.Tk):
 
         for event_type in EventType:
             self.bind(f"<{event_type.name}>", self.handle_event)
+        self.bind(f"<<notify>>", self.process_commands)
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.canvas.focus_set()
         self.after_idle(self.process_commands)
 
+    def on_closing(self):
+        self.closed = True
+        self.quit()
+        self.update()
+
+    def notify(self):
+        if not self.closed:
+            self.event_generate('<<notify>>')
+
     def process_commands(self, *args):
-        "Periodically poll the _commands queue"
         while True:
             try:
                 method, *args = _commands.get(False)
                 getattr(self, method)(*args)
             except Empty:
                 break
-        # FIXME: do not use polling at all; which is difficult since tkinter does not
-        #        support multithreading
-        self.after(int(1000 / _TkWindow.fps), self.process_commands)
 
     def handle_event(self, tkevent):
         _events.put(Event(tkevent))
@@ -202,35 +209,31 @@ def game_thread_main(callback, args):
     except:
         traceback.print_exc()
     finally:
-        _game_thread_exit()
+        _commands.put(('destroy',))
+        _game_thread_notify()
 
-def _game_thread_exit():
-    _commands.put(('destroy',))
-
-def sigint_handler(sig, frame):
-    w = _TkWindow.instance
-    if w:
-        w.quit()
-        w.update()
-
-def init(callback, fps=30, args=None):
+def init(callback, args=None):
     # start game thread
     threading.Thread(target=game_thread_main, args=[callback, (args or [])]).start()
 
     # block until wait() called on game thread
     _game_thread_initialized.wait()
 
-    _TkWindow.instance = _TkWindow(fps)
+    _TkWindow.instance = _TkWindow()
     _tk_initialized.set()
 
     signal.signal(signal.SIGINT, sigint_handler)
 
     try:
         _TkWindow.instance.mainloop()
-    except KeyboardInterrupt:
-        pass
-    _events.put(None)
-    _TkWindow.instance = None
+    finally:
+        _events.put(None)
+        _TkWindow.instance = None
+
+def sigint_handler(sig, frame):
+    w = _TkWindow.instance
+    if w:
+        w.on_closing()
 
 def _game_thread_wait_for_tk():
     if not _tk_initialized.is_set():
@@ -239,8 +242,14 @@ def _game_thread_wait_for_tk():
         # block until Tk is initialized
         _tk_initialized.wait()
 
-def wait(event_type=None):
+def _game_thread_notify():
     _game_thread_wait_for_tk()
+    w = _TkWindow.instance
+    if w:
+        w.notify()
+
+def wait(event_type=None):
+    _game_thread_notify()
     if not _TkWindow.instance:
         return None
     while True:
@@ -249,11 +258,14 @@ def wait(event_type=None):
             return event
 
 def get_events():
-    _game_thread_wait_for_tk()
+    _game_thread_notify()
     events = []
     while True:
         try:
-            events.append(_events.get(False))
+            event = _events.get(False)
+            if not event:
+                break
+            events.append(event)
         except Empty:
             break
     return events
@@ -287,30 +299,28 @@ def draw_rectangle(*args, **kwargs):
 
 def draw_end():
     _commands.put(('update',))
+    _game_thread_notify()
 
 def resize(w, h):
     _commands.put(('resize', w, h))
 
 def say(message):
-    _game_thread_wait_for_tk()
     _commands.put(('say', message))
+    _game_thread_notify()
 
 def input(prompt):
-    _game_thread_wait_for_tk()
     response = Queue()
     _commands.put(('input', prompt, response))
+    _game_thread_notify()
     return response.get()
-
-def with_window(func, *args):
-    _commands.put(('with_window', func, args))
 
 def is_alive():
     _game_thread_wait_for_tk()
     return bool(_TkWindow.instance)
 
-def loop():
+def loop(fps=30):
     while is_alive():
-        frame_duration = 1.0 / _TkWindow.fps
+        frame_duration = 1.0 / fps
         a = time.time()
         yield
         b = time.time()
@@ -320,8 +330,8 @@ def play_sound():
     _play_sound()
 
 if __name__ == '__main__':
-    def interactive_main(local):
+    def interactive_main(_locals):
         import code
-        code.interact(local=local)
+        code.interact(local=_locals)
 
-    init(interactive_main, args=locals())
+    init(interactive_main, args=[locals()])

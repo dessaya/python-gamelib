@@ -22,4 +22,4 @@ def main():
         if y > 300 or y < 0:
             dy *= -1
 
-gamelib.init(main, fps=30)
+gamelib.init(main)

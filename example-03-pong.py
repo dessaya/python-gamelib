@@ -147,4 +147,4 @@ def main():
         state = move_ball(state)
         state = check_goal(state)
 
-gamelib.init(main, fps=FPS)
+gamelib.init(main)
