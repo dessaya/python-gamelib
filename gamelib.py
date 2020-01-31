@@ -8,6 +8,7 @@ import threading
 import traceback
 import time
 import signal
+import os
 
 _commands = Queue()
 _events = Queue()
@@ -154,8 +155,7 @@ def _audio_init():
 
         if '://' not in sound:
             if not sound.startswith('/'):
-                from os import getcwd
-                sound = getcwd() + '/' + sound
+                sound = os.getcwd() + '/' + sound
             sound = 'file://' + sound
         url   = NSURL.URLWithString_(sound)
         nssound = NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
@@ -164,7 +164,6 @@ def _audio_init():
         nssound.play()
 
     def _playsoundNix(sound):
-        import os
         from urllib.request import pathname2url
 
         import gi
@@ -214,7 +213,8 @@ def game_thread_main(callback, args):
 
 def init(callback, args=None):
     # start game thread
-    threading.Thread(target=game_thread_main, args=[callback, (args or [])]).start()
+    game_thread = threading.Thread(target=game_thread_main, args=[callback, (args or [])])
+    game_thread.start()
 
     # block until wait() called on game thread
     _game_thread_initialized.wait()
@@ -229,6 +229,10 @@ def init(callback, args=None):
     finally:
         _events.put(None)
         _TkWindow.instance = None
+        game_thread.join(1)
+        if game_thread.is_alive():
+            print('Timeout while waiting for game thread. Infinite loop?')
+            os._exit(1)
 
 def sigint_handler(sig, frame):
     w = _TkWindow.instance
