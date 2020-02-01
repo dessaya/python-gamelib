@@ -10,12 +10,6 @@ import time
 import signal
 import os
 
-_commands = Queue()
-_events = Queue()
-
-_tk_initialized = threading.Event()
-_game_thread_initialized = threading.Event()
-
 class EventType(Enum):
     KeyPress = 'KeyPress'
     KeyRelease = 'KeyRelease'
@@ -38,6 +32,8 @@ class Event:
 
 class _TkWindow(tk.Tk):
     instance = None
+    initialized = threading.Event()
+    commands = Queue()
 
     def __init__(self):
         super().__init__()
@@ -72,13 +68,13 @@ class _TkWindow(tk.Tk):
     def process_commands(self, *args):
         while True:
             try:
-                method, *args = _commands.get(False)
+                method, *args = _TkWindow.commands.get(False)
                 getattr(self, method)(*args)
             except Empty:
                 break
 
     def handle_event(self, tkevent):
-        _events.put(Event(tkevent))
+        _GameThread.events.put(Event(tkevent))
 
     def resize(self, w, h):
         self.canvas.configure(width=w, height=h)
@@ -202,136 +198,166 @@ def _audio_init():
 
 _play_sound = _audio_init()
 
-def game_thread_main(callback, args):
-    try:
-        callback(*args)
-    except:
-        traceback.print_exc()
-    finally:
-        _commands.put(('destroy',))
-        _game_thread_notify()
+class _GameThread(threading.Thread):
+    instance = None
+    initialized = threading.Event()
+    events = Queue()
 
-def init(callback, args=None):
-    # start game thread
-    game_thread = threading.Thread(target=game_thread_main, args=[callback, (args or [])])
-    game_thread.start()
+    def start(self, game_main, args):
+        self.game_main = game_main
+        self.args = args
+        super().start()
 
-    # block until wait() called on game thread
-    _game_thread_initialized.wait()
+    def run(self):
+        try:
+            self.game_main(*self.args)
+        finally:
+            self.send_command_to_tk('destroy', notify=True)
 
-    _TkWindow.instance = _TkWindow()
-    _tk_initialized.set()
+    def notify_tk(self):
+        self.wait_for_tk()
+        w = _TkWindow.instance
+        if w:
+            w.notify()
 
-    signal.signal(signal.SIGINT, sigint_handler)
+    def wait_for_tk(self):
+        if not _TkWindow.initialized.is_set():
+            _GameThread.initialized.set()
 
-    try:
-        _TkWindow.instance.mainloop()
-    finally:
-        _events.put(None)
-        _TkWindow.instance = None
-        game_thread.join(1)
-        if game_thread.is_alive():
-            print('Timeout while waiting for game thread. Infinite loop?')
-            os._exit(1)
+            # block until Tk is initialized
+            _TkWindow.initialized.wait()
 
-def sigint_handler(sig, frame):
+    def send_command_to_tk(self, *args, notify=False):
+        _TkWindow.commands.put(args)
+        if notify:
+            self.notify_tk()
+
+    def wait(self, event_type=None):
+        self.notify_tk()
+        if not _TkWindow.instance:
+            return None
+        while True:
+            event = _GameThread.events.get()
+            if not event or not event_type or event.type == event_type:
+                return event
+
+    def get_events(self):
+        self.notify_tk()
+        events = []
+        while True:
+            try:
+                event = _GameThread.events.get(False)
+                if not event:
+                    break
+                events.append(event)
+            except Empty:
+                break
+        return events
+
+    def title(self, s):
+        self.send_command_to_tk('title', s)
+
+    def draw_begin(self):
+        self.send_command_to_tk('clear')
+
+    def draw_image(self, path, x, y):
+        self.send_command_to_tk('draw_image', path, x, y)
+
+    def draw_text(self, text, x, y, size=12, **kwargs):
+        self.send_command_to_tk('draw_text', text, x, y, size, kwargs)
+
+    def draw_arc(self, *args, **kwargs):
+        self.send_command_to_tk('draw', 'arc', args, kwargs)
+
+    def draw_line(self, *args, **kwargs):
+        self.send_command_to_tk('draw', 'line', args, kwargs)
+
+    def draw_oval(self, *args, **kwargs):
+        self.send_command_to_tk('draw', 'oval', args, kwargs)
+
+    def draw_polygon(self, *args, **kwargs):
+        self.send_command_to_tk('draw', 'polygon', args, kwargs)
+
+    def draw_rectangle(self, *args, **kwargs):
+        self.send_command_to_tk('draw', 'rectangle', args, kwargs)
+
+    def draw_end(self):
+        self.send_command_to_tk('update', notify=True)
+
+    def resize(self, w, h):
+        self.send_command_to_tk('resize', w, h)
+
+    def say(self, message):
+        self.send_command_to_tk('say', message, notify=True)
+
+    def input(self, prompt):
+        response = Queue()
+        self.send_command_to_tk('input', prompt, response, notify=True)
+        return response.get()
+
+    def is_alive(self):
+        self.wait_for_tk()
+        return bool(_TkWindow.instance)
+
+    def loop(self, fps=30):
+        while is_alive():
+            frame_duration = 1.0 / fps
+            a = time.time()
+            yield
+            b = time.time()
+            time.sleep(max(0, frame_duration - (b - a)))
+
+_GameThread.instance = _GameThread()
+
+wait = _GameThread.instance.wait
+get_events = _GameThread.instance.get_events
+title = _GameThread.instance.title
+draw_begin = _GameThread.instance.draw_begin
+draw_image = _GameThread.instance.draw_image
+draw_text = _GameThread.instance.draw_text
+draw_arc = _GameThread.instance.draw_arc
+draw_line = _GameThread.instance.draw_line
+draw_oval = _GameThread.instance.draw_oval
+draw_polygon = _GameThread.instance.draw_polygon
+draw_rectangle = _GameThread.instance.draw_rectangle
+draw_end = _GameThread.instance.draw_end
+resize = _GameThread.instance.resize
+say = _GameThread.instance.say
+input = _GameThread.instance.input
+is_alive = _GameThread.instance.is_alive
+loop = _GameThread.instance.loop
+play_sound = _play_sound
+
+def _excepthook(args):
+    traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback)
+
+def _sigint_handler(sig, frame):
     w = _TkWindow.instance
     if w:
         w.on_closing()
 
-def _game_thread_wait_for_tk():
-    if not _tk_initialized.is_set():
-        _game_thread_initialized.set()
+def init(game_main, args=None):
+    threading.excepthook = _excepthook
 
-        # block until Tk is initialized
-        _tk_initialized.wait()
+    _GameThread.instance.start(game_main, args or [])
 
-def _game_thread_notify():
-    _game_thread_wait_for_tk()
-    w = _TkWindow.instance
-    if w:
-        w.notify()
+    # block until wait() called on game thread
+    _GameThread.initialized.wait()
 
-def wait(event_type=None):
-    _game_thread_notify()
-    if not _TkWindow.instance:
-        return None
-    while True:
-        event = _events.get()
-        if not event or not event_type or event.type == event_type:
-            return event
+    _TkWindow.instance = _TkWindow()
+    _TkWindow.initialized.set()
 
-def get_events():
-    _game_thread_notify()
-    events = []
-    while True:
-        try:
-            event = _events.get(False)
-            if not event:
-                break
-            events.append(event)
-        except Empty:
-            break
-    return events
+    signal.signal(signal.SIGINT, _sigint_handler)
 
-def title(s):
-    _commands.put(('title', s))
-
-def draw_begin():
-    _commands.put(('clear',))
-
-def draw_image(path, x, y):
-    _commands.put(('draw_image', path, x, y))
-
-def draw_text(text, x, y, size=12, **kwargs):
-    _commands.put(('draw_text', text, x, y, size, kwargs))
-
-def draw_arc(*args, **kwargs):
-    _commands.put(('draw', 'arc', args, kwargs))
-
-def draw_line(*args, **kwargs):
-    _commands.put(('draw', 'line', args, kwargs))
-
-def draw_oval(*args, **kwargs):
-    _commands.put(('draw', 'oval', args, kwargs))
-
-def draw_polygon(*args, **kwargs):
-    _commands.put(('draw', 'polygon', args, kwargs))
-
-def draw_rectangle(*args, **kwargs):
-    _commands.put(('draw', 'rectangle', args, kwargs))
-
-def draw_end():
-    _commands.put(('update',))
-    _game_thread_notify()
-
-def resize(w, h):
-    _commands.put(('resize', w, h))
-
-def say(message):
-    _commands.put(('say', message))
-    _game_thread_notify()
-
-def input(prompt):
-    response = Queue()
-    _commands.put(('input', prompt, response))
-    _game_thread_notify()
-    return response.get()
-
-def is_alive():
-    _game_thread_wait_for_tk()
-    return bool(_TkWindow.instance)
-
-def loop(fps=30):
-    while is_alive():
-        frame_duration = 1.0 / fps
-        a = time.time()
-        yield
-        b = time.time()
-        time.sleep(max(0, frame_duration - (b - a)))
-
-def play_sound():
-    _play_sound()
+    try:
+        _TkWindow.instance.mainloop()
+    finally:
+        _GameThread.events.put(None)
+        _TkWindow.instance = None
+        _GameThread.instance.join(1)
+        if _GameThread.instance.is_alive():
+            print('Killing unresponsive game thread. Make sure to call get_events() or wait() periodically.')
+            os._exit(1)
 
 if __name__ == '__main__':
     def interactive_main(_locals):
