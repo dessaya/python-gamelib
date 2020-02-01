@@ -53,27 +53,30 @@ gamelib.init(main)
 
 ## Goals
 
-* **Easy to learn:** Writing games should be almost as simple as writing console
-  programs. It should not require knowledge about OOP, double-buffering, color channels,
-  blitting or actors.
+* **Easy to learn:** Writing a simple game should be almost as easy as writing console
+  programs. It should not require knowledge about inheritance, components, double-buffering,
+  color channels, blitting or actors.
 * **Simple, basic API:** Support drawing stuff and maybe playing sounds, nothing more.
 * **Portable** Support Windows / Mac OS / Linux desktop.
-* **Easy to install:** See [relevant XKCD](https://xkcd.com/1987/). It should
-  not require installing anything else after a fresh Python installation.
+* **Easy to install:** See [relevant XKCD](https://xkcd.com/1987/). `gamelib.py` should
+  not depend on anything that's not available in a fresh Python installation.
   That rules out `pip`.
 
 ## Installation
 
-Just download `gamelib.py` and place it alongside your project :)
+Just [download](https://raw.githubusercontent.com/dessaya/python-gamelib/master/gamelib.py)
+`gamelib.py` and place it alongside your project :)
 
 ## Documentation
 
-```
->>> import gamelib
->>> help(gamelib)
-```
+First, look at the examples!
 
-Also look at the examples.
+To generate the HTML documentation:
+
+```
+$ pip import pdoc3
+$ bash generate-html-documentation.sh
+```
 
 ## Run the examples
 
