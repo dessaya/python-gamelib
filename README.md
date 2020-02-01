@@ -71,11 +71,13 @@ Just [download](https://raw.githubusercontent.com/dessaya/python-gamelib/master/
 
 First, look at the examples!
 
+Gamelib library reference: https://dessaya.github.io/python-gamelib/
+
 To generate the HTML documentation:
 
 ```
 $ pip import pdoc3
-$ bash generate-html-documentation.sh
+$ bash docs/generate.sh
 ```
 
 ## Run the examples
