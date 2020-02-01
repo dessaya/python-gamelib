@@ -113,6 +113,8 @@ def draw_score(state):
 
 
 def main():
+    gamelib.title("Pong")
+
     W, H = SIZE
     gamelib.resize(W, H)
 

@@ -44,7 +44,7 @@ class _TkWindow(tk.Tk):
 
         self.closed = False
 
-        self.title("TK Game")
+        self.title("Gamelib")
         self.resizable(False, False)
 
         self.assets = {}

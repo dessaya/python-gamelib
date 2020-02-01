@@ -68,6 +68,7 @@ def draw(life):
     gamelib.draw_end()
 
 def main():
+    gamelib.title("Game of life")
     life = life_create([
         '..........',
         '..........',
