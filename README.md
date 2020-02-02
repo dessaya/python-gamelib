@@ -15,7 +15,7 @@ def main():
     gamelib.draw_text('Hello world!', 0, 0)
     gamelib.draw_end()
 
-    # wait until the user closes the window
+    # wait until the user presses any key
     gamelib.wait(gamelib.EventType.KeyPress)
 
 gamelib.init(main)
