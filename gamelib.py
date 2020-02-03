@@ -306,7 +306,7 @@ class _GameThread(threading.Thread):
             ```
 
         Note:
-            The only image formats that is supported accross all platforms (Windows/Mac/Linux)
+            The only image formats that are supported accross all platforms (Windows/Mac/Linux)
             are GIF and PPM/PGM/PBM.
         """
         self.send_command_to_tk('draw_image', path, x, y)
