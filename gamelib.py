@@ -346,7 +346,7 @@ class _GameThread(threading.Thread):
             gamelib.draw_arc(10, 10, 20, 20, outline='white', fill='red')
             ```
         """
-        self.send_command_to_tk('draw', 'arc', args, options)
+        self.send_command_to_tk('draw', 'arc', [x1, y1, x2, y2], options)
 
     def draw_line(self, x1, y1, x2, y2, **options):
         """
@@ -360,7 +360,7 @@ class _GameThread(threading.Thread):
             gamelib.draw_line(10, 10, 30, 20, fill='blue', width=2)
             ```
         """
-        self.send_command_to_tk('draw', 'line', args, options)
+        self.send_command_to_tk('draw', 'line', [x1, y1, x2, y2], options)
 
     def draw_oval(self, x1, y1, x2, y2, **options):
         """
@@ -374,7 +374,7 @@ class _GameThread(threading.Thread):
             gamelib.draw_oval(10, 10, 30, 20, outline='white', fill='red')
             ```
         """
-        self.send_command_to_tk('draw', 'oval', args, options)
+        self.send_command_to_tk('draw', 'oval', [x1, y1, x2, y2], options)
 
     def draw_polygon(self, points, **options):
         """
@@ -390,7 +390,7 @@ class _GameThread(threading.Thread):
             gamelib.draw_polygon([10, 10, 30, 20, 0, 40], outline='white', fill='red')
             ```
         """
-        self.send_command_to_tk('draw', 'polygon', args, options)
+        self.send_command_to_tk('draw', 'polygon', points, options)
 
     def draw_rectangle(self, x1, y1, x2, y2, **options):
         """
@@ -404,7 +404,7 @@ class _GameThread(threading.Thread):
             gamelib.draw_rectangle(10, 10, 30, 20, outline='white', fill='red')
             ```
         """
-        self.send_command_to_tk('draw', 'rectangle', args, options)
+        self.send_command_to_tk('draw', 'rectangle', [x1, y1, x2, y2], options)
 
     def draw_end(self):
         """
