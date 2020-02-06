@@ -23,6 +23,7 @@ intended for educational purposes (e.g. to be used in basic …" />
 <section id="section-intro">
 <p>Gamelib is a pure-Python single-file library/framework for writing simple games. It is
 intended for educational purposes (e.g. to be used in basic programming courses).</p>
+<p><a href="https://github.com/dessaya/python-gamelib">https://github.com/dessaya/python-gamelib</a></p>
 </section>
 <section>
 </section>
@@ -76,7 +77,7 @@ gamelib.draw_end()
 <pre><code>gamelib.draw_image('images/player.gif', 10, 10)
 </code></pre>
 <h2 id="note">Note</h2>
-<p>The only image formats that is supported accross all platforms (Windows/Mac/Linux)
+<p>The only image formats that are supported accross all platforms (Windows/Mac/Linux)
 are GIF and PPM/PGM/PBM.</p></section>
 </dd>
 <dt id="gamelib.draw_line"><code class="name flex">
@@ -214,7 +215,13 @@ clicked on Cancel instead of OK.</p></section>
 <span>def <span class="ident">play_sound</span></span>(<span>sound)</span>
 </code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Play a sound located at <code>path</code>.</p>
+<h2 id="example">Example</h2>
+<pre><code>gamelib.play_sound('sound/jump.wav')
+</code></pre>
+<h2 id="note">Note</h2>
+<p>The only sound format that is supported accross all platforms (Windows/Mac/Linux)
+is WAV.</p></section>
 </dd>
 <dt id="gamelib.resize"><code class="name flex">
 <span>def <span class="ident">resize</span></span>(<span>w, h)</span>

@@ -177,13 +177,24 @@ def _audio_init():
     system = system()
 
     if system == 'Windows':
-        return _playsoundWin
+        f = _playsoundWin
     elif system == 'Darwin':
-        return _playsoundOSX
+        f = _playsoundOSX
     else:
-        return _playsoundNix
+        f = _playsoundNix
+    f.__doc__ = '''
+        Play a sound located at the given path.
 
-_play_sound = _audio_init()
+        Example:
+            ```
+            gamelib.play_sound('sound/jump.wav')
+            ```
+
+        Note:
+            The only sound format that is supported accross all platforms (Windows/Mac/Linux)
+            is WAV.
+    '''
+    return f
 
 class _GameThread(threading.Thread):
     instance = None
@@ -498,7 +509,7 @@ say = _GameThread.instance.say
 input = _GameThread.instance.input
 is_alive = _GameThread.instance.is_alive
 loop = _GameThread.instance.loop
-play_sound = _play_sound
+play_sound = _audio_init()
 
 def _excepthook(args):
     traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback)
