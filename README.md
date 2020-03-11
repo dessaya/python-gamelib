@@ -32,7 +32,7 @@ def main():
     x, y = 150, 80
     dx, dy = 5, 5
 
-    for _ in gamelib.loop(fps=30):
+    while gamelib.loop(fps=30):
         for event in gamelib.get_events():
             if event.type == gamelib.EventType.KeyPress and event.key == 'q':
                 return

@@ -134,7 +134,7 @@ def main():
 
     key_pressed = {}
 
-    for _ in gamelib.loop():
+    while gamelib.loop():
         gamelib.draw_begin()
         draw_paddle(state, PADDLE1)
         draw_paddle(state, PADDLE2)

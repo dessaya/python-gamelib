@@ -269,7 +269,7 @@ class _GameThread(threading.Thread):
 
         Example:
             ```
-            for _ in gamelib.loop(fps=30):
+            while gamelib.loop(fps=30):
                 # this is executed 30 times per second
                 for event in gamelib.get_events():
                     if event.type == gamelib.EventType.KeyPress and event.key == 'q':
@@ -469,26 +469,31 @@ class _GameThread(threading.Thread):
         self.wait_for_tk()
         return bool(_TkWindow.instance)
 
+    _last_loop_time = None
+
     def loop(self, fps=30):
         """
-        Returns an iterable that yields `fps` times per second. The value yielded is always
-        `None` and can be discarded (eg, by using `_` as the loop variable name).
+        When used in a `while` loop, the body will be executed `fps` times per second.
+
+        Returns:
+            `True` if the game window is still open, `False` otherwise.
 
         Example:
             ```
-            for _ in gamelib.loop(fps=30):
+            while gamelib.loop(fps=30):
                 # this is executed 30 times per second
                 for event in gamelib.get_events():
                     if event.type == gamelib.EventType.KeyPress and event.key == 'q':
                         return
             ```
         """
-        while is_alive():
-            frame_duration = 1.0 / fps
-            a = time.time()
-            yield
-            b = time.time()
+        frame_duration = 1.0 / fps
+        a = _GameThread._last_loop_time
+        b = time.time()
+        if a:
             time.sleep(max(0, frame_duration - (b - a)))
+        _GameThread._last_loop_time = time.time()
+        return self.is_alive()
 
 _GameThread.instance = _GameThread()
 
