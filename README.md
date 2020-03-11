@@ -12,7 +12,7 @@ def main():
     gamelib.resize(300, 300)
 
     gamelib.draw_begin()
-    gamelib.draw_text('Hello world!', 0, 0)
+    gamelib.draw_text('Hello world!', 150, 150)
     gamelib.draw_end()
 
     # wait until the user presses any key
@@ -76,7 +76,7 @@ Gamelib library reference: https://dessaya.github.io/python-gamelib/
 To generate the HTML documentation:
 
 ```
-$ pip import pdoc3
+$ pip3 install pdoc3
 $ bash docs/generate.sh
 ```
 

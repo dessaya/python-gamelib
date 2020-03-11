@@ -1,3 +1,7 @@
+"""
+This example shows a rectangle moving around the window.
+"""
+
 import gamelib
 
 def main():

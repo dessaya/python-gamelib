@@ -1,5 +1,10 @@
+"""
+An implementation of Conway's Game of Life.
+"""
+
 import gamelib
 
+# size in pixels of a single cell
 CELL_SIZE = 10
 
 def life_create(map):

@@ -1,3 +1,10 @@
+"""
+The game Pong!
+Keys:
+    Left player:  Q/A
+    Right player: Up/Down arrow keys
+"""
+
 import gamelib
 from collections import namedtuple
 import random
@@ -14,7 +21,7 @@ PADDLE_HEIGHT = 60
 BALL_RADIUS = 5
 
 FPS = 30
-VELOCITY = 100 / FPS
+VELOCITY = 150 / FPS
 
 State = namedtuple('State', ['paddles', 'ball_pos', 'ball_vel', 'score'])
 
@@ -22,7 +29,7 @@ def move_paddle(state, p, dy):
     W, H = SIZE
     paddles = list(state.paddles)
     y = paddles[p]
-    y += dy * VELOCITY
+    y += dy * VELOCITY * 1.5
     if y < 0: y = 0
     if y > H: y = H
     paddles[p] = y
@@ -35,8 +42,8 @@ def paddle_collision(state, p):
     py = state.paddles[p]
     px = PADDLE_GAP if p == 0 else H - PADDLE_GAP
 
-    if abs(bx - px) > PADDLE_WIDTH / 2 + BALL_RADIUS / 2: return False
-    if abs(by - py) > PADDLE_HEIGHT / 2 + BALL_RADIUS / 2: return False
+    if abs(bx - px) > PADDLE_WIDTH / 2 + BALL_RADIUS: return False
+    if abs(by - py) > PADDLE_HEIGHT / 2 + BALL_RADIUS: return False
     return True
 
 def move_ball(state):
@@ -47,7 +54,7 @@ def move_ball(state):
     x = x + vx * VELOCITY
     y = y + vy * VELOCITY
 
-    if y < 0 or y > H:
+    if y < BALL_RADIUS or y > H - BALL_RADIUS:
         vy = -vy
 
     if (
@@ -55,7 +62,7 @@ def move_ball(state):
         (vx > 0 and paddle_collision(state, PADDLE2))
     ):
         vx = -vx
-        vy += random.random() - 0.5
+        vy += 2 * (random.random() - 0.5)
 
     return state._replace(ball_pos=(x, y), ball_vel=(vx, vy))
 
