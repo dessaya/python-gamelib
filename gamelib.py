@@ -577,10 +577,16 @@ class Event:
         type: An `EventType`.
         key: A key that has been pressed/released.
         mouse_button: 0, 1 or 2 for left, right and middle mouse buttons respectively.
+        x: The current mouse horizontal position, in pixels.
+        y: The current mouse vertical position, in pixels.
 
     This is actually a wrapper for the
     [Tkinter Event class](https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm#events).
     Any of the `tk.Event` attributes can be accessed through this object.
+
+    ## See also
+
+    `wait`, `get_events`
     """
 
     def __init__(self, tkevent):
