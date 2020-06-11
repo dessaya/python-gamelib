@@ -8,14 +8,13 @@ https://github.com/dessaya/python-gamelib
 import tkinter as tk
 from tkinter.font import Font
 from tkinter import simpledialog, messagebox
-from collections import namedtuple
 from queue import Queue, Empty
 from enum import Enum
 import threading
-import traceback
 import time
 import signal
 import os
+import sys
 
 class _TkWindow(tk.Tk):
     instance = None
@@ -209,6 +208,8 @@ class _GameThread(threading.Thread):
     def run(self):
         try:
             self.game_main(*self.args)
+        except Exception as e:
+            sys.excepthook(*sys.exc_info())
         finally:
             self.send_command_to_tk('destroy', notify=True)
 
@@ -516,13 +517,12 @@ is_alive = _GameThread.instance.is_alive
 loop = _GameThread.instance.loop
 play_sound = _audio_init()
 
-def _excepthook(args):
-    traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback)
-
 def _sigint_handler(sig, frame):
     w = _TkWindow.instance
     if w:
         w.on_closing()
+    else:
+        raise KeyboardInterrupt()
 
 def init(game_main, args=None):
     """
@@ -532,8 +532,6 @@ def init(game_main, args=None):
         game_main: Your `main` function.
         args: List of arguments to be passed to the `main` function, or `None`.
     """
-    threading.excepthook = _excepthook
-
     _GameThread.instance.start(game_main, args or [])
 
     # block until wait(), get_events(), etc called on game thread.
@@ -554,6 +552,7 @@ def init(game_main, args=None):
         if _GameThread.instance.is_alive():
             print('Killing unresponsive game thread. Make sure to call get_events() or wait() periodically.')
             os._exit(1)
+        os._exit(0)
 
 class EventType(Enum):
     "An enumeration of the different types of `Event`s supported by gamelib."
