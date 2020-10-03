@@ -49,7 +49,7 @@ class _TkWindow(tk.Tk):
 
     def notify(self):
         if not self.closed:
-            self.event_generate('<<notify>>')
+            self.event_generate('<<notify>>', when='tail')
 
     def process_commands(self, *args):
         while True:
@@ -93,8 +93,9 @@ class _TkWindow(tk.Tk):
             self.assets[path] = tk.PhotoImage(file=path)
         return self.assets[path]
 
-    def say(self, message):
+    def say(self, message, done):
         messagebox.showinfo(self.title(), message, parent=self)
+        done.put(True)
 
     def input(self, prompt, response):
         response.put(simpledialog.askstring(self.title(), prompt, parent=self))
@@ -459,7 +460,9 @@ class _GameThread(threading.Thread):
 
     def say(self, message):
         """Present the user with the given `message` in a dialog box with an OK button."""
-        self.send_command_to_tk('say', message, notify=True)
+        done = Queue()
+        self.send_command_to_tk('say', message, done, notify=True)
+        done.get()
 
     def input(self, prompt):
         """
