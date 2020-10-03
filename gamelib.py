@@ -89,6 +89,7 @@ class _TkWindow(tk.Tk):
 
     def get_image(self, path):
         if path not in self.assets:
+            check_image_format(path)
             self.assets[path] = tk.PhotoImage(file=path)
         return self.assets[path]
 
@@ -100,6 +101,21 @@ class _TkWindow(tk.Tk):
 
     def with_window(self, func, args):
         func(self, *args)
+
+def check_image_format(path):
+    "Produce a warning message if the image format is not supported"
+    ext = path[-4:].lower()
+    supported = (".gif", ".ppm", ".pgm", ".pbm")
+    if ext not in supported:
+        print(f"{path}: Warning: image format {ext} is not supported and may not work properly on some platforms (Windows/Mac/Linux).")
+        print(f"Please use one of: {supported}.")
+
+def check_audio_format(path):
+    "Produce a warning message if the audio format is not supported"
+    ext = path[-4:].lower()
+    if ext != ".wav":
+        print(f"{path}: Warning: audio format {ext} is not supported and may not work properly on some platforms (Windows/Mac/Linux).")
+        print(f"Please use WAV.")
 
 def _audio_init():
     # shamelessly stolen from https://github.com/TaylorSMarks/playsound
@@ -175,13 +191,8 @@ def _audio_init():
     from platform import system
     system = system()
 
-    if system == 'Windows':
-        f = _playsoundWin
-    elif system == 'Darwin':
-        f = _playsoundOSX
-    else:
-        f = _playsoundNix
-    f.__doc__ = '''
+    def play_sound(sound):
+        """
         Play a sound located at the given path.
 
         Example:
@@ -192,8 +203,17 @@ def _audio_init():
         Note:
             The only sound format that is supported accross all platforms (Windows/Mac/Linux)
             is WAV.
-    '''
-    return f
+        """
+
+        check_audio_format(sound)
+        if system == 'Windows':
+            _playsoundWin(sound)
+        elif system == 'Darwin':
+            _playsoundOSX(sound)
+        else:
+            _playsoundNix(sound)
+
+    return play_sound
 
 class _GameThread(threading.Thread):
     instance = None
