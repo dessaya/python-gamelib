@@ -71,10 +71,10 @@ Just [download](https://raw.githubusercontent.com/dessaya/python-gamelib/master/
 
 First, look into the provided examples!
 
-* [Hello world](https://raw.githubusercontent.com/dessaya/python-gamelib/master/example-01-hello-world.py)
-* [Bouncing square](https://raw.githubusercontent.com/dessaya/python-gamelib/master/example-02-bounce.py)
-* [Game of Life](https://raw.githubusercontent.com/dessaya/python-gamelib/master/example-03-life.py)
-* [Pong](https://raw.githubusercontent.com/dessaya/python-gamelib/master/example-04-pong.py)
+* [Hello world](https://github.com/dessaya/python-gamelib/blob/master/example-01-hello-world.py)
+* [Bouncing square](https://github.com/dessaya/python-gamelib/blob/master/example-02-bounce.py)
+* [Game of Life](https://github.com/dessaya/python-gamelib/blob/master/example-03-life.py)
+* [Pong](https://github.com/dessaya/python-gamelib/blob/master/example-04-pong.py)
 
 Gamelib library reference: https://dessaya.github.io/python-gamelib/
 
