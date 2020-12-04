@@ -21,6 +21,10 @@ class _TkWindow(tk.Tk):
     initialized = threading.Event()
     commands = Queue()
 
+    busy_count = 0
+    idle = threading.Event()
+    idle.set()
+
     def __init__(self):
         super().__init__()
 
@@ -52,12 +56,19 @@ class _TkWindow(tk.Tk):
             self.event_generate('<<notify>>', when='tail')
 
     def process_commands(self, *args):
-        while True:
-            try:
-                method, *args = _TkWindow.commands.get(False)
-                getattr(self, method)(*args)
-            except Empty:
-                break
+        _TkWindow.busy_count += 1
+        _TkWindow.idle.clear()
+        try:
+            while True:
+                try:
+                    method, *args = _TkWindow.commands.get(False)
+                    getattr(self, method)(*args)
+                except Empty:
+                    break
+        finally:
+            _TkWindow.busy_count -= 1
+            if _TkWindow.busy_count == 0:
+                _TkWindow.idle.set()
 
     def handle_event(self, tkevent):
         _GameThread.events.put(Event(tkevent))
@@ -327,6 +338,7 @@ class _GameThread(threading.Thread):
             gamelib.draw_end()
             ```
         """
+        _TkWindow.idle.wait()
         self.send_command_to_tk('clear')
 
     def draw_image(self, path, x, y):
