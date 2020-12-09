@@ -41,12 +41,12 @@ class _TkWindow(tk.Tk):
         for event_type in EventType:
             self.bind(f"<{event_type.name}>", self.handle_event)
         self.bind(f"<<notify>>", self.process_commands)
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.protocol("WM_DELETE_WINDOW", self.close)
 
         self.canvas.focus_set()
         self.after_idle(self.process_commands)
 
-    def on_closing(self):
+    def close(self):
         self.closed = True
         self.quit()
         self.update()
@@ -243,7 +243,7 @@ class _GameThread(threading.Thread):
         except Exception as e:
             sys.excepthook(*sys.exc_info())
         finally:
-            self.send_command_to_tk('destroy', notify=True)
+            self.send_command_to_tk('close', notify=True)
 
     def notify_tk(self):
         self.wait_for_tk()
@@ -555,7 +555,7 @@ play_sound = _audio_init()
 def _sigint_handler(sig, frame):
     w = _TkWindow.instance
     if w:
-        w.on_closing()
+        w.close()
     else:
         raise KeyboardInterrupt()
 
