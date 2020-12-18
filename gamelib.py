@@ -627,7 +627,7 @@ class Event:
         self.tkevent = tkevent
 
     def __getattr__(self, k):
-        if k == 'type': return EventType[str(self.tkevent.type)]
+        if k == 'type': return EventType[self.tkevent.type.name]
         if k == 'key': return self.tkevent.keysym
         if k == 'mouse_button': return self.tkevent.num
         return getattr(self.tkevent, k)
