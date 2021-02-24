@@ -149,7 +149,7 @@ def _audio_init():
                 windll.winmm.mciGetErrorStringA(errorCode, errorBuffer, 254)
                 exceptionMessage = ('\n    Error ' + str(errorCode) + ' for command:'
                                     '\n        ' + command.decode() +
-                                    '\n    ' + errorBuffer.value.decode())
+                                    '\n    ' + errorBuffer.value.decode(getfilesystemencoding(), 'ignore'))
                 raise PlaysoundException(exceptionMessage)
             return buf.value
 
