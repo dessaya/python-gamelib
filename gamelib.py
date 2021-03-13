@@ -87,15 +87,22 @@ class _TkWindow(tk.Tk):
         options.update(kwargs)
         getattr(self.canvas, f'create_{type}')(*args, **options)
 
-    def draw_text(self, text, x, y, size, kwargs):
+    def draw_text(self, text, x, y, font, size, bold, italic, kwargs):
         options = {'fill': 'white'}
         options.update(kwargs)
-        self.canvas.create_text(x, y, text=text, font=self.get_font(size), **options)
+        self.canvas.create_text(x, y, text=text, font=self.get_font(font, size, bold, italic), **options)
 
-    def get_font(self, size):
-        name = f'font-{size}'
+    def get_font(self, family, size, bold, italic):
+        weight = 'normal'
+        if bold:
+            weight = 'bold'
+        slant = 'roman'
+        if italic:
+            slant = 'italic'
+        name = f'font-{family}-{size}-{weight}-{slant}'
+        print(name)
         if name not in self.assets:
-            self.assets[name] = Font(size=size)
+            self.assets[name] = Font(family=family, size=size, weight=weight, slant=slant)
         return self.assets[name]
 
     def get_image(self, path):
@@ -356,16 +363,27 @@ class _GameThread(threading.Thread):
         """
         self.send_command_to_tk('draw_image', path, x, y)
 
-    def draw_text(self, text, x, y, size=12, **options):
+    def draw_text(self, text, x, y, font=None, size=12, bold=False, italic=False, **options):
         """
-        Draw some `text` at coordinates `x, y` with the given `size`.
+        Draw some `text` at coordinates `x, y` with the given properties.
 
-        Some of the supported options are:
+        Args:
+            text: The text to draw.
+            x:    The screen coordinates for the text.
+            y:    The screen coordinates for the text.
+            font: Font family name (eg: `'Helvetica'`). **Note:** the only font guaranteed to be
+                  available in all systems is the default font. If the selected font is not found,
+                  the default font will be used instead.
+            size: Size of the text.
+            bold: Whether or not to use bold weight.
+            italic: Whether or not to use italic slant.
+
+        Some of the supported extra options are:
 
         * `fill`: Fill color. It can be named colors like `'red'`, `'white'`, etc,
           or a specific color in `'#rrggbb'` hexadecimal format.
         * `anchor`: Where to place the text relative to the given position.
-          It be any combination of `n` (North), `s` (South), `e`
+          It may be any combination of `n` (North), `s` (South), `e`
           (East), `w` (West) and `c` (center). Default is `c`.
 
         To see all supported options, see the documentation for
@@ -376,7 +394,7 @@ class _GameThread(threading.Thread):
             gamelib.draw_text('Hello world!', 10, 10, fill='red', anchor='nw')
             ```
         """
-        self.send_command_to_tk('draw_text', text, x, y, size, options)
+        self.send_command_to_tk('draw_text', text, x, y, font, size, bold, italic, options)
 
     def draw_arc(self, x1, y1, x2, y2, **options):
         """
