@@ -93,7 +93,7 @@ $ python3 example-01-hello-world.py
 
 ## Limitations
 
-* Very limited drawing API (based on [Tkinter Canvas](https://effbot.org/tkinterbook/canvas.htm)).
+* Very limited drawing API (based on [Tkinter Canvas](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/canvas.html)).
     * Don't expect to be able to draw thousands of elements at 60 FPS.
     * The only image formats that are supported accross all platforms are GIF and PPM/PGM/PBM.
 * Very limited sound API (just a single function: `play_sound()`, based on

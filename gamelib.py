@@ -387,7 +387,7 @@ class _GameThread(threading.Thread):
           (East), `w` (West) and `c` (center). Default is `c`.
 
         To see all supported options, see the documentation for
-        [`Tkinter.Canvas.create_text`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_text-method).
+        [`tkinter.Canvas.create_text`](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/create_text.html).
 
         Example:
             ```
@@ -402,7 +402,7 @@ class _GameThread(threading.Thread):
         `x2, y2`.
 
         To see all supported options, see the documentation for
-        [`Tkinter.Canvas.create_arc`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_arc-method).
+        [`tkinter.Canvas.create_arc`](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/create_arc.html).
 
         Example:
             ```
@@ -416,7 +416,7 @@ class _GameThread(threading.Thread):
         Draw a straight line between points `x1, y1` and `x2, y2`.
 
         To see all supported options, see the documentation for
-        [`Tkinter.Canvas.create_line`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_line-method).
+        [`tkinter.Canvas.create_line`](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/create_line.html).
 
         Example:
             ```
@@ -430,7 +430,7 @@ class _GameThread(threading.Thread):
         Draw an ellipse in the bounding box between points `x1, y1` and `x2, y2`.
 
         To see all supported options, see the documentation for
-        [`Tkinter.Canvas.create_oval`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_oval-method).
+        [`tkinter.Canvas.create_oval`](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/create_oval.html).
 
         Example:
             ```
@@ -446,7 +446,7 @@ class _GameThread(threading.Thread):
         joined with the first one with a segment.
 
         To see all supported options, see the documentation for
-        [`Tkinter.Canvas.create_polygon`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_polygon-method).
+        [`tkinter.Canvas.create_polygon`](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/create_polygon.html).
 
         Example:
             ```
@@ -460,7 +460,7 @@ class _GameThread(threading.Thread):
         Draw an rectangle in the bounding box between points `x1, y1` and `x2, y2`.
 
         To see all supported options, see the documentation for
-        [`Tkinter.Canvas.create_rectangle`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_rectangle-method).
+        [`tkinter.Canvas.create_rectangle`](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/create_rectangle.html).
 
         Example:
             ```
@@ -633,7 +633,7 @@ class Event:
         y: The current mouse vertical position, in pixels.
 
     This is actually a wrapper for the
-    [Tkinter Event class](https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm#events).
+    [Tkinter Event class](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/event-handlers.html).
     Any of the `tk.Event` attributes can be accessed through this object.
 
     ## See also
