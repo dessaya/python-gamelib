@@ -100,7 +100,6 @@ class _TkWindow(tk.Tk):
         if italic:
             slant = 'italic'
         name = f'font-{family}-{size}-{weight}-{slant}'
-        print(name)
         if name not in self.assets:
             self.assets[name] = Font(family=family, size=size, weight=weight, slant=slant)
         return self.assets[name]
