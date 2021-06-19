@@ -79,6 +79,9 @@ class _TkWindow(tk.Tk):
     def clear(self):
         self.canvas.delete("all")
 
+    def icon(self, path):
+        self.tk.call('wm', 'iconphoto', self._w, self.get_image(path))
+
     def draw_image(self, path, x, y):
         self.canvas.create_image(x, y, anchor='nw', image=self.get_image(path))
 
@@ -331,6 +334,21 @@ class _GameThread(threading.Thread):
         """Set the window title to `s`."""
         self.send_command_to_tk('title', s)
 
+    def icon(self, path):
+        """
+        Set the window icon to the image located at `path`.
+
+        Example:
+            ```
+            gamelib.icon('images/icon.gif')
+            ```
+
+        Note:
+            The only image formats that are supported accross all platforms (Windows/Mac/Linux)
+            are GIF and PPM/PGM/PBM.
+        """
+        self.send_command_to_tk('icon', path)
+
     def draw_begin(self):
         """
         Clear the window.
@@ -553,6 +571,7 @@ _GameThread.instance = _GameThread()
 wait = _GameThread.instance.wait
 get_events = _GameThread.instance.get_events
 title = _GameThread.instance.title
+icon = _GameThread.instance.icon
 draw_begin = _GameThread.instance.draw_begin
 draw_image = _GameThread.instance.draw_image
 draw_text = _GameThread.instance.draw_text

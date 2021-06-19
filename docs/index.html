@@ -192,6 +192,18 @@ It may be any combination of <code>n</code> (North), <code>s</code> (South), <co
             return
 </code></pre></div>
 </dd>
+<dt id="gamelib.icon"><code class="name flex">
+<span>def <span class="ident">icon</span></span>(<span>path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set the window icon to the image located at <code>path</code>.</p>
+<h2 id="example">Example</h2>
+<pre><code>gamelib.icon('images/icon.gif')
+</code></pre>
+<h2 id="note">Note</h2>
+<p>The only image formats that are supported accross all platforms (Windows/Mac/Linux)
+are GIF and PPM/PGM/PBM.</p></div>
+</dd>
 <dt id="gamelib.init"><code class="name flex">
 <span>def <span class="ident">init</span></span>(<span>game_main, args=None)</span>
 </code></dt>
@@ -385,6 +397,7 @@ Any of the <code>tk.Event</code> attributes can be accessed through this object.
 <li><code><a title="gamelib.draw_rectangle" href="#gamelib.draw_rectangle">draw_rectangle</a></code></li>
 <li><code><a title="gamelib.draw_text" href="#gamelib.draw_text">draw_text</a></code></li>
 <li><code><a title="gamelib.get_events" href="#gamelib.get_events">get_events</a></code></li>
+<li><code><a title="gamelib.icon" href="#gamelib.icon">icon</a></code></li>
 <li><code><a title="gamelib.init" href="#gamelib.init">init</a></code></li>
 <li><code><a title="gamelib.input" href="#gamelib.input">input</a></code></li>
 <li><code><a title="gamelib.is_alive" href="#gamelib.is_alive">is_alive</a></code></li>
